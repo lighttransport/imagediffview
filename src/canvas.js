@@ -5,8 +5,9 @@ const RENDER_VERTEX = require('./shader/render.vert');
 const RENDER_FRAGMENT = require('./shader/render.frag');
 
 export default class Canvas {
-    constructor(canvasId) {
+    constructor(canvasId, overlayId) {
         this.canvasId = canvasId;
+        this.overlayId = overlayId;
         this.pixelRatio = 1.0;//window.devicePixelRatio;
 
 
@@ -20,7 +21,8 @@ export default class Canvas {
         this.boundKeyup = this.keyupListener.bind(this);
 
         this.mouse = [0, 0];
-        this.numPhotos = 1;
+        this.numPhotos = 0;
+        this.photoNames = new Array(4);
     }
 
     resizeCanvas() {
@@ -28,13 +30,33 @@ export default class Canvas {
         this.canvas.width = parent.clientWidth * this.pixelRatio;
         this.canvas.height = parent.clientHeight * this.pixelRatio;
         this.canvasRatio = this.canvas.width / this.canvas.height / 2;
+
+        const rect = this.canvas.getBoundingClientRect();
+
+        this.overlay.width = parent.clientWidth * this.pixelRatio;
+        this.overlay.height = parent.clientHeight * this.pixelRatio;
     }
 
+    resizeCanvasFromPhoto(width, height) {
+        const ratio = height / width;
+        const defaultSize = 600;
+        this.canvas.parentElement.style.width = (defaultSize) +'px';
+        this.canvas.parentElement.style.height = (defaultSize* ratio) + 'px';
+        const parent = this.canvas.parentElement;
+        this.canvas.width = parent.clientWidth * this.pixelRatio;
+        this.canvas.height = parent.clientHeight * this.pixelRatio;
+        this.canvasRatio = this.canvas.width / this.canvas.height / 2;
+
+        const rect = this.canvas.getBoundingClientRect();
+
+        this.overlay.width = this.canvas.width;
+        this.overlay.height = this.canvas.height;
+    }
 
     init() {
         this.canvas = document.getElementById(this.canvasId);
+        this.overlay = document.getElementById(this.overlayId);
         this.resizeCanvas();
-        this.canvasRatio = this.canvas.width / this.canvas.height / 2;
         this.gl = GetWebGLContext(this.canvas);
         this.vertexBuffer = CreateSquareVbo(this.gl);
 
@@ -52,6 +74,7 @@ export default class Canvas {
 
         this.photos = CreateRGBATextures(this.gl,
                                          this.canvas.width, this.canvas.height, 4);
+        this.ctx = this.canvas.getContext('2d');
     }
 
     getRenderUniformLocations(program) {
@@ -72,9 +95,11 @@ export default class Canvas {
                                                           'u_tex4'));
     }
 
-    setPhotoObj(imgObj, index) {
+    setPhotoObj(name, imgObj, index) {
+        this.photoNames[index] = name;
         this.photos[index] = CreateRGBAImageTexture2D(this.gl,
                                                       imgObj.width, imgObj.height, imgObj);
+        this.resizeCanvasFromPhoto(imgObj.width, imgObj.height);
     }
 
     setRenderUniformValues(width, height) {
@@ -91,6 +116,12 @@ export default class Canvas {
     }
 
     render() {
+        this.gl.clearColor(1, 1, 1, 1);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        if(this.numPhotos === 0) {
+            this.renderOverlay();
+            return;
+        }
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.useProgram(this.renderCanvasProgram);
         this.setRenderUniformValues(this.canvas.width, this.canvas.height);
@@ -101,34 +132,67 @@ export default class Canvas {
                                     this.gl.FLOAT, false, 0, 0);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
         this.gl.flush();
+
+        this.renderOverlay();
+    }
+
+    renderOverlay() {
+        const ctx = this.overlay.getContext('2d');
+        ctx.fillStyle = "rgba(1, 1, 1,0)";
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        ctx.font = "14px 'Times New Roman'";
+        if (this.numPhotos >= 1) {
+            const w = ctx.measureText(this.photoNames[0]).width;
+            ctx.fillStyle = "rgba(64, 64, 64, 0.7)";
+            ctx.fillRect(5, 0, w + 10, 25);
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillText(this.photoNames[0], 10, 20);
+        }
+        if (this.numPhotos >= 2) {
+            const w = ctx.measureText(this.photoNames[1]).width;
+            ctx.fillStyle = "rgba(64, 64, 64, 0.7)";
+            ctx.fillRect(this.canvas.width - w - 15, 0, w + 10, 25);
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillText(this.photoNames[1], this.canvas.width - w - 10, 20);
+        }
+        if (this.numPhotos >= 3) {
+            const w = ctx.measureText(this.photoNames[2]).width;
+            ctx.fillStyle = "rgba(64, 64, 64, 0.7)";
+            ctx.fillRect(5, this.canvas.height - 25, w + 10, 25);
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillText(this.photoNames[2], 10, this.canvas.height - 10);
+        }
+        if (this.numPhotos >= 4) {
+            const w = ctx.measureText(this.photoNames[3]).width;
+            ctx.fillStyle = "rgba(64, 64, 64, 0.7)";
+            ctx.fillRect(this.canvas.width - w - 15, this.canvas.height - 25,
+                         w + 10, 25);
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillText(this.photoNames[3], this.canvas.width - w - 10,
+                         this.canvas.height - 10);
+        }
     }
 
     addEventListeners() {
-        this.canvas.addEventListener('mousedown',
+        this.overlay.addEventListener('mousedown',
                                      this.boundMouseDownListener);
-        this.canvas.addEventListener('mouseup',
+        this.overlay.addEventListener('mouseup',
                                      this.boundMouseUpListener);
-        this.canvas.addEventListener('wheel',
+        this.overlay.addEventListener('wheel',
                                      this.boundMouseWheelListener);
-        this.canvas.addEventListener('mousemove',
+        this.overlay.addEventListener('mousemove',
                                      this.boundMouseMoveListener);
-        this.canvas.addEventListener('mouseout',
+        this.overlay.addEventListener('mouseout',
                                      this.boundMouseOutListener);
-        this.canvas.addEventListener('dblclick',
+        this.overlay.addEventListener('dblclick',
                                      this.boundDblClickLisntener);
-        this.canvas.addEventListener('keydown',
+        this.overlay.addEventListener('keydown',
                                      this.boundKeydown);
-        this.canvas.addEventListener('keyup',
+        this.overlay.addEventListener('keyup',
                                      this.boundKeyup);
-        this.canvas.addEventListener('contextmenu',
+        this.overlay.addEventListener('contextmenu',
                                      event => event.preventDefault());
-    }
-
-    resizeCanvas() {
-        const parent = this.canvas.parentElement;
-        this.canvas.width = parent.clientWidth * this.pixelRatio;
-        this.canvas.height = parent.clientHeight * this.pixelRatio;
-        this.canvasRatio = this.canvas.width / this.canvas.height / 2;
     }
 
     mouseWheelListener(event) {}
@@ -143,9 +207,12 @@ export default class Canvas {
         event.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
         this.mouse = [event.clientX - rect.left, event.clientY - rect.top];
+        this.isRendering = true;
     }
 
-    mouseOutListener(event) {}
+    mouseOutListener(event) {
+        this.isRendering = false;
+    }
 
     keydownListener(event) {}
 

@@ -5,7 +5,7 @@ import { CreateRGBAImageTexture2D } from './glUtils.js';
 
 window.addEventListener('load', () => {
     window.Vue = Vue;
-    const canvas = new Canvas('canvas');
+    const canvas = new Canvas('canvas', 'overlay');
 
     const d = { 'canvas':  canvas };
 
@@ -23,7 +23,10 @@ window.addEventListener('load', () => {
     canvas.render();
 
     function renderLoop() {
-        canvas.render();
+        if (canvas.isRendering) {
+            canvas.render();
+            canvas.isRendering = false;
+        }
         requestAnimationFrame(renderLoop);
     }
     renderLoop();
