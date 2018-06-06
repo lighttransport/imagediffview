@@ -7,6 +7,8 @@ uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
 uniform sampler2D u_tex4;
+uniform bool u_enableBlend;
+uniform float u_blendFactor;
 
 void main() {
   const float lineHalf = 3.;
@@ -17,12 +19,18 @@ void main() {
   if (u_numPhotos == 1) {
     gl_FragColor = texture2D(u_tex1, uv);
   } else if (u_numPhotos == 2) {
-    if (abs(gl_FragCoord.x - u_mouse.x) < lineHalf) {
-      gl_FragColor = vec4(1.);
-    } else if (gl_FragCoord.x < u_mouse.x) {
-      gl_FragColor = texture2D(u_tex1, uv);
+    if (u_enableBlend) {
+      vec4 t1 = texture2D(u_tex1, uv);
+      vec4 t2 = texture2D(u_tex2, uv);
+      gl_FragColor = mix(t1, t2, u_blendFactor);
     } else {
-      gl_FragColor = texture2D(u_tex2, uv);
+      if (abs(gl_FragCoord.x - u_mouse.x) < lineHalf) {
+        gl_FragColor = vec4(1.);
+      } else if (gl_FragCoord.x < u_mouse.x) {
+        gl_FragColor = texture2D(u_tex1, uv);
+      } else {
+        gl_FragColor = texture2D(u_tex2, uv);
+      }
     }
   } else if (u_numPhotos == 3) {
     if ((abs(gl_FragCoord.x - u_mouse.x) < lineHalf &&

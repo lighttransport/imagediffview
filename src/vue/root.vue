@@ -8,6 +8,13 @@
                 {{ key }}
             </option>
         </select>
+        <div>
+          <input type="checkbox" v-model="canvas.enableBlend"
+                 @change="reRender">enable blend<br>
+          <input type="range" v-model="canvas.blendFactor"
+                 @input="reRender" min="0" max="1" step="0.01">blendFactor
+        </div>
+
         <div id="canvasParent">
           <canvas id="canvas"></canvas>
           <canvas id="overlay"></canvas>
@@ -49,13 +56,13 @@ export default {
                     this.$set(this.files, splitted[1], [])
                 }
                 const img = new Image();
-                
+
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.addEventListener('load', () => {
                     img.src = reader.result;
                 });
-                
+
                 this.files[splitted[1]].push({'name': splitted[2],
                                               'imgObj': img,
                                               'checked': false,
@@ -78,7 +85,7 @@ export default {
                     }
                 }
             }
-            
+
             numChecked = 0;
             for (const file of this.files[this.selectedScene]) {
                 if(file.checked) {
@@ -93,6 +100,10 @@ export default {
         sceneChangedListener: function() {
             const photo = this.files[this.selectedScene][0];
             this.canvas.resizeCanvasFromPhoto(photo.imgObj.width, photo.imgObj.height);            this.canvas.render();
+        },
+        reRender: function() {
+
+            this.canvas.render();
         }
     }
  }

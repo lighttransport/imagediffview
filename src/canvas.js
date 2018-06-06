@@ -23,6 +23,9 @@ export default class Canvas {
         this.mouse = [0, 0];
         this.numPhotos = 0;
         this.photoNames = new Array(4);
+
+        this.enableBlend = false;
+        this.blendFactor = 0.5;
     }
 
     resizeCanvas() {
@@ -84,6 +87,10 @@ export default class Canvas {
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_mouse'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_enableBlend'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_blendFactor'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_numPhotos'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_tex1'));
@@ -106,6 +113,8 @@ export default class Canvas {
         let i = 0;
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform2f(this.uniLocations[i++], this.mouse[0], this.canvas.height - this.mouse[1]);
+        this.gl.uniform1i(this.uniLocations[i++], this.enableBlend);
+        this.gl.uniform1f(this.uniLocations[i++], this.blendFactor);
         this.gl.uniform1i(this.uniLocations[i++], this.numPhotos);
 
         for (let n = 0; n < this.numPhotos; n++) {
