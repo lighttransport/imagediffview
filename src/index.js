@@ -1,11 +1,11 @@
 import Vue from 'vue';
 import Root from './vue/root.vue';
-import Canvas from './canvas.js';
+import ImageCanvas from './imageCanvas.js';
 import { CreateRGBAImageTexture2D } from './glUtils.js';
 
 window.addEventListener('load', () => {
     window.Vue = Vue;
-    const canvas = new Canvas('canvas', 'overlay');
+    const canvas = new ImageCanvas('canvas', 'overlay');
 
     const d = { 'canvas':  canvas };
 

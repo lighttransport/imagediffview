@@ -14,14 +14,15 @@
           <input type="range" v-model="canvas.blendFactor"
                  @input="reRender" min="0" max="1" step="0.01">blendFactor
         </div>
-
-        <div id="canvasParent">
-          <canvas id="canvas"></canvas>
-          <canvas id="overlay"></canvas>
+        <div>
+          <div id="canvasParent">
+            <canvas id="canvas"></canvas>
+            <canvas id="overlay"></canvas>
+          </div>
         </div>
         <ul>
             <li v-for="photo in files[selectedScene]" class="photo-list" >
-                <input type="checkbox" v-model="photo.checked"
+                <input type="checkbox" v-model="photo.isRendering"
                        @change="checkedListener" :id="photo.id">
                 {{ photo.name }}
             </li>
@@ -36,6 +37,7 @@
 </template>
 
 <script>
+import ImageData from '../imageData.js';
 export default {
     props: ['canvas', 'overlay'],
     data: function() {
@@ -55,32 +57,22 @@ export default {
                 if(this.files[splitted[1]] === undefined) {
                     this.$set(this.files, splitted[1], [])
                 }
-                const img = new Image();
-
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.addEventListener('load', () => {
-                    img.src = reader.result;
-                });
-
-                this.files[splitted[1]].push({'name': splitted[2],
-                                              'imgObj': img,
-                                              'checked': false,
-                                              'id': i});
+                
+                this.files[splitted[1]].push(new ImageData(splitted[2], file));
             }
         },
         checkedListener: function(event) {
             let numChecked = 0;
             for (const file of this.files[this.selectedScene]) {
-                if(file.checked) {
+                if(file.isRendering) {
                     numChecked++;
                 }
             }
 
             if(numChecked >= 5) {
                 for (const f of this.files[this.selectedScene]) {
-                    if(f.checked && event.target.id != f.id) {
-                        this.$set(f, 'checked', false);
+                    if(f.isRendering && event.target.id != f.id) {
+                        this.$set(f, 'isRendering', false);
                         break;
                     }
                 }
@@ -88,8 +80,9 @@ export default {
 
             numChecked = 0;
             for (const file of this.files[this.selectedScene]) {
-                if(file.checked) {
-                    this.canvas.setPhotoObj(file.name, file.imgObj, numChecked);
+                if(file.isRendering) {
+                    this.canvas.setPhotoObj(file.name, file.imgObj, numChecked,
+                                           file);
                     numChecked++;
                 }
             }

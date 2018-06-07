@@ -4,7 +4,7 @@ import { GetWebGLContext, CreateSquareVbo, AttachShader,
 const RENDER_VERTEX = require('./shader/render.vert');
 const RENDER_FRAGMENT = require('./shader/render.frag');
 
-export default class Canvas {
+export default class ImageCanvas {
     constructor(canvasId, overlayId) {
         this.canvasId = canvasId;
         this.overlayId = overlayId;
@@ -26,6 +26,8 @@ export default class Canvas {
 
         this.enableBlend = false;
         this.blendFactor = 0.5;
+
+        this.photoObjs = undefined;
     }
 
     resizeCanvas() {
@@ -102,11 +104,13 @@ export default class Canvas {
                                                           'u_tex4'));
     }
 
-    setPhotoObj(name, imgObj, index) {
+    setPhotoObj(name, imgObj, index, photoObj) {
         this.photoNames[index] = name;
         this.photos[index] = CreateRGBAImageTexture2D(this.gl,
                                                       imgObj.width, imgObj.height, imgObj);
         this.resizeCanvasFromPhoto(imgObj.width, imgObj.height);
+
+        this.currentPhotoObj = photoObj;
     }
 
     setRenderUniformValues(width, height) {
@@ -143,6 +147,7 @@ export default class Canvas {
         this.gl.flush();
 
         this.renderOverlay();
+
     }
 
     renderOverlay() {
@@ -216,7 +221,17 @@ export default class Canvas {
         event.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
         this.mouse = [event.clientX - rect.left, event.clientY - rect.top];
-        this.isRendering = true;
+
+        if (this.numPhotos >= 2) {
+            this.isRendering = true;
+        }
+
+        if (this.numPhotos === 1) {
+            // var pixels = new Uint8Array(this.gl.canvas.width * this.gl.canvas.height * 4);
+            // this.gl.readPixels(0, 0, this.canvas.width, this.canvas.height,
+            //                    this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixels);
+            // console.log(pixels);
+        }
     }
 
     mouseOutListener(event) {
