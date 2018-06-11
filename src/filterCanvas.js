@@ -46,19 +46,23 @@ export default class FilterCanvas extends Canvas {
                                               img.imgObj);
         const ratio = img.imgObj.width / img.imgObj.height;
         const parent = this.canvas.parentElement
-        const pw = parent.parentElement.width;
-        const ph = parent.parentElement.height;
+        const pw = parent.parentElement.clientWidth;
+        const ph = parent.parentElement.clientHeight;
         console.log(parent.parentElement);
         if (ratio > 1.0) {
             console.log(ratio);
             console.log(pw);
             console.log(ph);
             // width > height
-            parent.style.height = '80%';
-            parent.height = '80%';
-            //parent.width = (ph * ratio);
+            this.canvas.style.height = (ph * 0.8) +'px';
+            this.canvas.height = (ph * 0.8);
+            this.canvas.width = (ph * 0.8) * ratio;
+            this.canvas.style.width = ((ph * 0.8) * ratio) +'px';
         } else {
-            
+            this.canvas.style.height = (pw * 0.8) +'px';
+            this.canvas.height = (pw * 0.8);
+            this.canvas.width = (pw * 0.8) * ratio;
+            this.canvas.style.width = ((pw * 0.8) * ratio) +'px';
         }
         console.log(parent);
         console.log();
