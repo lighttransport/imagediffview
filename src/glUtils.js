@@ -74,6 +74,7 @@ export function CreateRGBATexture2D(gl, width, height,
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height,
                   0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    
     gl.bindTexture(gl.TEXTURE_2D, null);
     return texture;
 }
@@ -87,8 +88,8 @@ export function CreateRGBAImageTexture2D(gl, width, height, image) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-//    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height,
-                  //0, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height,
+    //              0, gl.RGBA, gl.UNSIGNED_BYTE, image);
     gl.bindTexture(gl.TEXTURE_2D, null);
     return texture;
 }

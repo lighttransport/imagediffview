@@ -2,12 +2,14 @@ import Vue from 'vue';
 import Root from './vue/root.vue';
 import ImageCanvas from './imageCanvas.js';
 import { CreateRGBAImageTexture2D } from './glUtils.js';
+import CanvasManager from './canvasManager.js';
 
 window.addEventListener('load', () => {
     window.Vue = Vue;
-    const canvas = new ImageCanvas('canvas', 'overlay');
 
-    const d = { 'canvas':  canvas };
+    const canvasManager = new CanvasManager('canvas');
+
+    const d = { 'canvasManager': canvasManager  };
 
     /* eslint-disable no-unused-vars */
     const app = new Vue({
@@ -19,14 +21,16 @@ window.addEventListener('load', () => {
         components: { 'root': Root }
     });
 
-    canvas.init();
-    canvas.render();
+    canvasManager.init();
 
+    let resizeTimer = setTimeout(canvasManager.resizeCallback, 500);
+    window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(canvasManager.resizeCallback, 500);
+    });
+    
     function renderLoop() {
-        if (canvas.isRendering) {
-            canvas.render();
-            canvas.isRendering = false;
-        }
+        canvasManager.renderLoop();
         requestAnimationFrame(renderLoop);
     }
     renderLoop();

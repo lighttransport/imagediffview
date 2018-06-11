@@ -1,15 +1,16 @@
 import { GetWebGLContext, CreateSquareVbo, AttachShader,
          LinkProgram, CreateRGBATextures, CreateRGBAImageTexture2D  } from './glUtils.js';
+import Canvas from './canvas.js';
 
 const RENDER_VERTEX = require('./shader/render.vert');
 const RENDER_FRAGMENT = require('./shader/render.frag');
 
-export default class ImageCanvas {
+export default class ImageCanvas extends Canvas {
     constructor(canvasId, overlayId) {
+        super(canvasId);
         this.canvasId = canvasId;
         this.overlayId = overlayId;
         this.pixelRatio = 1.0;//window.devicePixelRatio;
-
 
         this.boundMouseDownListener = this.mouseDownListener.bind(this);
         this.boundMouseUpListener = this.mouseUpListener.bind(this);

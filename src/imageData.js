@@ -1,5 +1,5 @@
 export default class ImageData {
-    constructor(name, file) {
+    constructor(name, file, loaded) {
         this.name = name;
         this.imgObj = new Image();
         this.isRendering = false;
@@ -22,21 +22,10 @@ export default class ImageData {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.addEventListener('load', () => {
+            this.imgObj.addEventListener('load', () => {
+                loaded();
+            });
             this.imgObj.src = reader.result;
-
-            this.canvas = document.createElement('canvas');
-            this.canvas.width = this.imgObj.width;
-            this.canvas.height = this.imgObj.height;
-            this.imageWidth = this.imgObj.width;
-            this.imageHeight = this.imgObj.height;
-            this.ctx = this.canvas.getContext('2d');
-
-            //console.log(this.imgObj.width);
-            //console.log(this.imgObj.height);
-
-            //this.ctx.drawImage(this.imgObj, 0, 0);
-
-            //this.computeHistogram();
         });
     }
 
