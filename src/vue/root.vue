@@ -3,7 +3,7 @@
       <header class="header">
         <input type="file" id="file" name="file" @change="fileSelected">
       </header>
-      <contents-panel/>
+      <contents-panel :canvasManager="canvasManager" />
       <footer class="footer"> 
       </footer>
     </div>

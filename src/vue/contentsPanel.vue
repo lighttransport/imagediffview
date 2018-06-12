@@ -6,7 +6,7 @@
           <canvas id="canvas" tabIndex="1000"></canvas>
         </div>
       </div>
-      <div class="propertyPanel"></div>
+      <filterPanel :canvasManager="canvasManager" />
     </div>
     <control-panel/>
   </div>
@@ -14,9 +14,12 @@
 
 <script>
 import ControlPanel from './controlPanel.vue';
+import FilterPanel from './filterPanel.vue';
 export default {
+    props: ['canvasManager'],
     components: {
-        ControlPanel
+        ControlPanel,
+        FilterPanel
     }
 }
 </script>
@@ -44,18 +47,6 @@ canvas {
     width: 100%;
     height: 100%;
     cursor: crosshair;
-}
-
-.propertyPanel{
-    height: 150px;
-
-    border-style: ridge;
-    background-color: white;
-    border-top: ridge;
-    border-color: gray;
-    display: flex;
-    align-items: center;
-    padding-left: 5px;
 }
 
 .canvasPanel {

@@ -5,6 +5,7 @@ export default class CanvasManager {
         this.canvasId = canvasId;
 
         this.resizeCallback = this.resize.bind(this);
+        this.filterCanvas = null;
     }
 
     init() {

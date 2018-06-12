@@ -23,10 +23,16 @@ export default class FilterCanvas extends Canvas {
                                                        'a_vertex');
         this.getRenderUniformLocations(this.renderCanvasProgram);
 
-        this.image = CreateRGBATextures(this.gl,
+        this.imageTex = CreateRGBATextures(this.gl,
                                         this.canvas.width, this.canvas.height, 1)[0];
-
+        this.imgObj = undefined;
         this.mouse = [0, 0];
+
+        this.filterMode = -1;
+        this.sepiaAmount = 0.5;
+        this.hueSaturation = [0, 0];
+        this.brightnessContrast = [0, 0];
+        this.vibranceAmount = 0;
     }
 
     getRenderUniformLocations(program) {
@@ -37,46 +43,70 @@ export default class FilterCanvas extends Canvas {
                                                           'u_mouse'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_tex1'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_filterMode'))
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_sepiaAmount'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_hueSaturation'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_brightnessContrast'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_vibranceAmount'));
     }
 
-    setImage(img) {
-        this.image = CreateRGBAImageTexture2D(this.gl,
-                                              img.imgObj.width,
-                                              img.imgObj.height,
-                                              img.imgObj);
-        const ratio = img.imgObj.width / img.imgObj.height;
-        const parent = this.canvas.parentElement
-        const pw = parent.parentElement.clientWidth;
-        const ph = parent.parentElement.clientHeight;
+    resizeCanvas() {
+        if (this.imgObj != undefined) {
+            const ratio = this.imgObj.imgObj.width / this.imgObj.imgObj.height;
+            const parent = this.canvas.parentElement
+            const pw = parent.parentElement.clientWidth;
+            const ph = parent.parentElement.clientHeight;
 
-        const offsetRatio = 0.9
-        if (ratio > 1.0) {
-            // image width > height
-            if(pw > ph) {
-                this.canvas.height = (ph * offsetRatio);
-                this.canvas.style.height = (ph * offsetRatio) +'px';
-                this.canvas.width = (ph * offsetRatio) * ratio;
-                this.canvas.style.width = ((ph * offsetRatio) * ratio) +'px';
+            const offsetRatio = 0.9
+            if (ratio > 1.0) {
+                // image width > height
+                if(pw > ph) {
+                    this.canvas.height = (ph * offsetRatio);
+                    this.canvas.style.height = (ph * offsetRatio) +'px';
+                    this.canvas.width = (ph * offsetRatio) * ratio;
+                    this.canvas.style.width = ((ph * offsetRatio) * ratio) +'px';
+                } else {
+                    this.canvas.height = (pw * offsetRatio) * ratio;
+                    this.canvas.style.height = ((pw * offsetRatio) * ratio) +'px';
+                    this.canvas.width = (pw * offsetRatio);
+                    this.canvas.style.width = (pw * offsetRatio) +'px';
+                }
             } else {
-                this.canvas.height = (pw * offsetRatio) * ratio;
-                this.canvas.style.height = ((pw * offsetRatio) * ratio) +'px';
-                this.canvas.width = (pw * offsetRatio);
-                this.canvas.style.width = (pw * offsetRatio) +'px';
+                // image width < height
+                if(pw > ph) {
+                    this.canvas.height = (ph * offsetRatio);
+                    this.canvas.style.height = (ph * offsetRatio) +'px';
+                    this.canvas.width = (ph * offsetRatio) * ratio;
+                    this.canvas.style.width = ((ph * offsetRatio) * ratio) +'px';
+                } else {
+                    this.canvas.height = (pw * offsetRatio);
+                    this.canvas.style.height = (pw * offsetRatio) +'px';
+                    this.canvas.width = (pw * offsetRatio) * ratio;
+                    this.canvas.style.width = ((pw * offsetRatio) * ratio) +'px';
+                }
             }
         } else {
-            // image width < height
-            if(pw > ph) {
-                this.canvas.height = (ph * offsetRatio);
-                this.canvas.style.height = (ph * offsetRatio) +'px';
-                this.canvas.width = (ph * offsetRatio) * ratio;
-                this.canvas.style.width = ((ph * offsetRatio) * ratio) +'px';
-            } else {
-                this.canvas.height = (pw * offsetRatio);
-                this.canvas.style.height = (pw * offsetRatio) +'px';
-                this.canvas.width = (pw * offsetRatio) * ratio;
-                this.canvas.style.width = ((pw * offsetRatio) * ratio) +'px';
-            }
+            const parent = this.canvas.parentElement;
+            this.canvas.style.width = parent.clientWidth + 'px';
+            this.canvas.style.height = parent.clientHeight + 'px';
+            this.canvas.width = parent.clientWidth * this.pixelRatio;
+            this.canvas.height = parent.clientHeight * this.pixelRatio;
+            this.canvasRatio = this.canvas.width / this.canvas.height / 2;
         }
+    }
+    
+    setImage(img) {
+        this.imgObj = img;
+        this.imageTex = CreateRGBAImageTexture2D(this.gl,
+                                                 img.imgObj.width,
+                                                 img.imgObj.height,
+                                                 img.imgObj);
+        this.resizeCanvas();
 
         this.render();
     }
@@ -87,8 +117,16 @@ export default class FilterCanvas extends Canvas {
         this.gl.uniform2f(this.uniLocations[i++],
                           this.mouse[0], this.canvas.height - this.mouse[1]);
         this.gl.activeTexture(this.gl.TEXTURE0);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.image);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.imageTex);
         this.gl.uniform1i(this.uniLocations[i++], 0);
+
+        this.gl.uniform1i(this.uniLocations[i++], this.filterMode);
+        this.gl.uniform1f(this.uniLocations[i++], this.sepiaAmount);
+        this.gl.uniform2f(this.uniLocations[i++],
+                          this.hueSaturation[0], this.hueSaturation[1]);
+        this.gl.uniform2f(this.uniLocations[i++],
+                          this.brightnessContrast[0], this.brightnessContrast[1]);
+        this.gl.uniform1f(this.uniLocations[i++], this.vibranceAmount);
     }
 
     render() {
