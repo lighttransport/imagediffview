@@ -48,24 +48,36 @@ export default class FilterCanvas extends Canvas {
         const parent = this.canvas.parentElement
         const pw = parent.parentElement.clientWidth;
         const ph = parent.parentElement.clientHeight;
-        console.log(parent.parentElement);
+
+        const offsetRatio = 0.9
         if (ratio > 1.0) {
-            console.log(ratio);
-            console.log(pw);
-            console.log(ph);
-            // width > height
-            this.canvas.style.height = (ph * 0.8) +'px';
-            this.canvas.height = (ph * 0.8);
-            this.canvas.width = (ph * 0.8) * ratio;
-            this.canvas.style.width = ((ph * 0.8) * ratio) +'px';
+            // image width > height
+            if(pw > ph) {
+                this.canvas.height = (ph * offsetRatio);
+                this.canvas.style.height = (ph * offsetRatio) +'px';
+                this.canvas.width = (ph * offsetRatio) * ratio;
+                this.canvas.style.width = ((ph * offsetRatio) * ratio) +'px';
+            } else {
+                this.canvas.height = (pw * offsetRatio) * ratio;
+                this.canvas.style.height = ((pw * offsetRatio) * ratio) +'px';
+                this.canvas.width = (pw * offsetRatio);
+                this.canvas.style.width = (pw * offsetRatio) +'px';
+            }
         } else {
-            this.canvas.style.height = (pw * 0.8) +'px';
-            this.canvas.height = (pw * 0.8);
-            this.canvas.width = (pw * 0.8) * ratio;
-            this.canvas.style.width = ((pw * 0.8) * ratio) +'px';
+            // image width < height
+            if(pw > ph) {
+                this.canvas.height = (ph * offsetRatio);
+                this.canvas.style.height = (ph * offsetRatio) +'px';
+                this.canvas.width = (ph * offsetRatio) * ratio;
+                this.canvas.style.width = ((ph * offsetRatio) * ratio) +'px';
+            } else {
+                this.canvas.height = (pw * offsetRatio);
+                this.canvas.style.height = (pw * offsetRatio) +'px';
+                this.canvas.width = (pw * offsetRatio) * ratio;
+                this.canvas.style.width = ((pw * offsetRatio) * ratio) +'px';
+            }
         }
-        console.log(parent);
-        console.log();
+
         this.render();
     }
     
