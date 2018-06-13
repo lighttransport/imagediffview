@@ -24,7 +24,7 @@ export default class FilterCanvas extends Canvas {
         this.getRenderUniformLocations(this.renderCanvasProgram);
 
         this.imageTex = CreateRGBATextures(this.gl,
-                                        this.canvas.width, this.canvas.height, 1)[0];
+                                           this.canvas.width, this.canvas.height, 1)[0];
         this.imgObj = undefined;
         this.mouse = [0, 0];
 
@@ -110,6 +110,14 @@ export default class FilterCanvas extends Canvas {
 
         this.render();
     }
+
+    readPixels() {
+        this.render();
+        const buff = new Uint8Array(this.canvas.width * this.canvas.height * 4);
+        this.gl.readPixels(0, 0, this.canvas.width, this.canvas.height,
+                           this.gl.RGBA, this.gl.UNSIGNED_BYTE, buff);
+        console.log(buff);
+    }
     
     setRenderUniformValues(width, height) {
         let i = 0;
@@ -130,9 +138,6 @@ export default class FilterCanvas extends Canvas {
     }
 
     render() {
-        this.gl.clearColor(1, 1, 1, 1);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.useProgram(this.renderCanvasProgram);
         this.setRenderUniformValues(this.canvas.width, this.canvas.height);
