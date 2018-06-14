@@ -34,6 +34,10 @@ export default class FilterCanvas extends Canvas {
         this.hueSaturation = [0, 0];
         this.brightnessContrast = [0, 0];
         this.vibranceAmount = 0;
+
+        this.imageScale = 1.0;
+        this.imageTranslate = [0, 0];
+        this.prevImgTranslate = [0, 0];
     }
 
     getRenderUniformLocations(program) {
@@ -42,6 +46,10 @@ export default class FilterCanvas extends Canvas {
                                                           'u_resolution'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_mouse'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_scale'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_translate'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_tex1'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
@@ -121,7 +129,7 @@ export default class FilterCanvas extends Canvas {
         const buff = new Uint8Array(this.canvas.width * this.canvas.height * 4);
         this.gl.readPixels(0, 0, this.canvas.width, this.canvas.height,
                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, buff);
-        console.log(buff);
+//        console.log(buff);
     }
 
     setRenderUniformValues(width, height) {
@@ -129,6 +137,11 @@ export default class FilterCanvas extends Canvas {
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform2f(this.uniLocations[i++],
                           this.mouse[0], this.canvas.height - this.mouse[1]);
+        this.gl.uniform1f(this.uniLocations[i++],
+                          this.imageScale);
+        this.gl.uniform2f(this.uniLocations[i++],
+                          this.imageTranslate[0], this.imageTranslate[1]);
+
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.imageTex);
         this.gl.uniform1i(this.uniLocations[i++], 0);
@@ -163,6 +176,37 @@ export default class FilterCanvas extends Canvas {
         this.colorOnMouse = new Uint8Array(4);
         this.gl.readPixels(this.mouse[0], this.canvas.height - this.mouse[1], 1, 1,
                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.colorOnMouse);
-        console.log(this.colorOnMouse);
+
+        if(this.mouseDown && this.mouseButton === Canvas.MOUSE_BUTTON_RIGHT) {
+            //dragging
+            this.imageTranslate[0] = this.prevImgTranslate[0] + (this.prevMouse[0] - this.mouse[0]) / (this.canvas.width / this.imageScale);
+            this.imageTranslate[1] = this.prevImgTranslate[1] + (this.prevMouse[1] - this.mouse[1]) / (this.canvas.height / this.imageScale);
+            this.render();
+        }
+    }
+
+    mouseWheelListener(event) {
+        console.log('wheel');
+        if (event.deltaY < 0) {
+            this.imageScale /= 1.1;
+        } else {
+            this.imageScale *= 1.1;
+        }
+        this.render();
+    }
+
+    mouseDownListener(event) {
+        this.mouseDown = true;
+        this.mouseButton = event.button;
+        const rect = this.canvas.getBoundingClientRect();
+        this.prevMouse = [event.clientX - rect.left, event.clientY - rect.top];
+    }
+
+    mouseUpListener(event) {
+        this.mouseDown = false;
+        const rect = this.canvas.getBoundingClientRect();
+        this.prevMouse = [event.clientX - rect.left, event.clientY - rect.top];
+        this.prevImgTranslate[0] = this.imageTranslate[0];
+        this.prevImgTranslate[1] = this.imageTranslate[1];
     }
 }
