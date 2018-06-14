@@ -3,9 +3,12 @@ import Root from './vue/root.vue';
 import ImageCanvas from './imageCanvas.js';
 import { CreateRGBAImageTexture2D } from './glUtils.js';
 import CanvasManager from './canvasManager.js';
+import Buefy from 'buefy';
+import 'buefy/lib/buefy.css';
 
 window.addEventListener('load', () => {
     window.Vue = Vue;
+    Vue.use(Buefy);
 
     const canvasManager = new CanvasManager('canvas');
 
@@ -28,7 +31,7 @@ window.addEventListener('load', () => {
         window.clearTimeout(resizeTimer);
         resizeTimer = window.setTimeout(canvasManager.resizeCallback, 500);
     });
-    
+
     function renderLoop() {
         canvasManager.renderLoop();
         requestAnimationFrame(renderLoop);

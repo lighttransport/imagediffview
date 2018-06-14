@@ -8,7 +8,7 @@
       </div>
       <filterPanel :canvasManager="canvasManager" />
     </div>
-    <control-panel/>
+    <control-panel :canvasManager="canvasManager"/>
   </div>
 </template>
 

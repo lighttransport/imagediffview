@@ -29,26 +29,21 @@ export default class ImageData {
         });
     }
 
-    get(x, y) {
-        const data = this.ctx.getImageData(x, y,
-                                           1,
-                                           1);
-        //console.log(data.data);
-        return data;
-    }
+    computeHistogram(gl, buffer, width, height) {
+        gl.readPixels(0, 0, width, height,
+                      gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+        console.log(buffer);
 
-    computeHistogram() {
-        // this.imageData = this.ctx.getImageData(0, 0,
-        //                                        this.imgObj.width,
-        //                                        this.imgObj.height);
-        for (let x = 0; x < this.imageWidth; x++) {
-            for (let y = 0; y < this.imageHeight; y++) {
-                const col = this.get(x, y);
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                const col = [buffer[width * y + x + 1],
+                             buffer[width * y + x + 2],
+                             buffer[width * y + x + 3]];
                 const l = ( 0.298912 * col[0] + 0.586611 * col[1] + 0.114478 * col[2] );
                 this.histogram[0][col[0]]++;
                 this.histogram[1][col[1]]++;
                 this.histogram[2][col[2]]++;
-                this.histogram[3][l]++;
+                this.histogram[3][Math.round(l)]++;
             }
         }
         console.log(this.histogram);

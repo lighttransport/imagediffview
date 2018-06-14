@@ -1,7 +1,7 @@
 import assert from 'power-assert';
 
 export function GetWebGLContext(canvas) {
-    const gl = canvas.getContext('webgl');
+    const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
     assert.ok(gl);
     return gl;
 }

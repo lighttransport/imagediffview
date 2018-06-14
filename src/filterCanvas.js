@@ -27,6 +27,7 @@ export default class FilterCanvas extends Canvas {
                                            this.canvas.width, this.canvas.height, 1)[0];
         this.imgObj = undefined;
         this.mouse = [0, 0];
+        this.colorOnMouse = [0, 0, 0];
 
         this.filterMode = -1;
         this.sepiaAmount = 0.5;
@@ -44,7 +45,7 @@ export default class FilterCanvas extends Canvas {
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_tex1'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
-                                                          'u_filterMode'))
+                                                          'u_filterMode'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_sepiaAmount'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
@@ -58,11 +59,11 @@ export default class FilterCanvas extends Canvas {
     resizeCanvas() {
         if (this.imgObj != undefined) {
             const ratio = this.imgObj.imgObj.width / this.imgObj.imgObj.height;
-            const parent = this.canvas.parentElement
+            const parent = this.canvas.parentElement;
             const pw = parent.parentElement.clientWidth;
             const ph = parent.parentElement.clientHeight;
 
-            const offsetRatio = 0.9
+            const offsetRatio = 0.9;
             if (ratio > 1.0) {
                 // image width > height
                 if(pw > ph) {
@@ -99,7 +100,7 @@ export default class FilterCanvas extends Canvas {
             this.canvasRatio = this.canvas.width / this.canvas.height / 2;
         }
     }
-    
+
     setImage(img) {
         this.imgObj = img;
         this.imageTex = CreateRGBAImageTexture2D(this.gl,
@@ -107,8 +108,12 @@ export default class FilterCanvas extends Canvas {
                                                  img.imgObj.height,
                                                  img.imgObj);
         this.resizeCanvas();
+    }
 
+    computeHistogram(imageData) {
         this.render();
+        const buff = new Uint8Array(this.canvas.width * this.canvas.height * 4);
+        imageData.computeHistogram(this.gl, buff, this.canvas.width, this.canvas.height);
     }
 
     readPixels() {
@@ -118,7 +123,7 @@ export default class FilterCanvas extends Canvas {
                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, buff);
         console.log(buff);
     }
-    
+
     setRenderUniformValues(width, height) {
         let i = 0;
         this.gl.uniform2f(this.uniLocations[i++], width, height);
@@ -154,5 +159,10 @@ export default class FilterCanvas extends Canvas {
         event.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
         this.mouse = [event.clientX - rect.left, event.clientY - rect.top];
+
+        this.colorOnMouse = new Uint8Array(4);
+        this.gl.readPixels(this.mouse[0], this.canvas.height - this.mouse[1], 1, 1,
+                           this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.colorOnMouse);
+        console.log(this.colorOnMouse);
     }
 }
