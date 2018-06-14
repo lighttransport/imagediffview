@@ -10,6 +10,9 @@ uniform vec2 u_brightnessContrast;
 uniform float u_vibranceAmount;
 uniform float u_scale;
 uniform vec2 u_translate;
+uniform int u_chartPickMode;
+uniform vec4 u_chartFirstSecondPoints;
+uniform vec2 u_chartThirdPoint;
 
 const int FILTER_NONE = 0;
 const int FILTER_SEPIA = 1;
@@ -88,6 +91,46 @@ void main() {
        texCoord.y > 1. || texCoord.y < 0.) {
       gl_FragColor = vec4(1, 1, 1, 1);
       return;
+    }
+
+    vec2 firstPoint = u_chartFirstSecondPoints.xy;
+    vec2 secondPoint = u_chartFirstSecondPoints.zw;
+    vec2 thirdPoint = u_chartThirdPoint;
+    if(u_chartPickMode >= 1) {
+      if (distance(firstPoint, texCoord) < 0.001 ) {
+        gl_FragColor = vec4(1, 1, 1, 1);
+        return;
+      }
+    }
+    if (u_chartPickMode >= 2) {
+      if (distance(secondPoint, texCoord) < 0.001) {
+        gl_FragColor = vec4(1, 1, 1, 1);
+        return;
+      }
+    }
+    if (u_chartPickMode >= 3) {
+      if (distance(thirdPoint, texCoord) < 0.001) {
+        gl_FragColor = vec4(1, 1, 1, 1);
+        return;
+      }
+    }
+    if (u_chartPickMode >= 3) {
+      float d1 = secondPoint.x - firstPoint.x;
+      float d2 = secondPoint.y - thirdPoint.y;
+      float offsetX = abs(d1) / 12.0;
+      float offsetY = abs(d2) / 8.0;
+      float stepX = abs(d1) / 6.0;
+      float stepY = abs(d2) / 4.0;
+      for(int i = 0; i < 6; i++) {
+        for(int j = 0; j < 4; j++) {
+          float x = offsetX + stepX * float(i);
+          float y = offsetY + stepY * float(j);
+          if(distance(firstPoint + vec2(x, y), texCoord) < 0.001) {
+            gl_FragColor = vec4(1, 1, 1, 1);
+            return;
+          }
+        }
+      }
     }
 
     vec4 color = texture2D(u_tex1, texCoord);

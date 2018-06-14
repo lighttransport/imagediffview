@@ -38,6 +38,10 @@ export default class FilterCanvas extends Canvas {
         this.imageScale = 1.0;
         this.imageTranslate = [0, 0];
         this.prevImgTranslate = [0, 0];
+
+        // 0: none 1: first point 2: second point 3: third point 4: determined
+        this.chartPickMode = FilterCanvas.CHART_POINT_NONE;
+        this.chartPoints = [0, 0, 0, 0, 0, 0];
     }
 
     getRenderUniformLocations(program) {
@@ -50,6 +54,12 @@ export default class FilterCanvas extends Canvas {
                                                           'u_scale'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_translate'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_chartPickMode'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_chartFirstSecondPoints'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_chartThirdPoint'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_tex1'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
@@ -136,11 +146,18 @@ export default class FilterCanvas extends Canvas {
         let i = 0;
         this.gl.uniform2f(this.uniLocations[i++], width, height);
         this.gl.uniform2f(this.uniLocations[i++],
-                          this.mouse[0], this.canvas.height - this.mouse[1]);
+                          this.mouse[0], this.mouse[1]);
         this.gl.uniform1f(this.uniLocations[i++],
                           this.imageScale);
         this.gl.uniform2f(this.uniLocations[i++],
                           this.imageTranslate[0], this.imageTranslate[1]);
+        this.gl.uniform1i(this.uniLocations[i++],
+                          this.chartPickMode);
+        this.gl.uniform4f(this.uniLocations[i++],
+                          this.chartPoints[0], this.chartPoints[1],
+                          this.chartPoints[2], this.chartPoints[3]);
+        this.gl.uniform2f(this.uniLocations[i++],
+                          this.chartPoints[4], this.chartPoints[5]);
 
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.imageTex);
@@ -181,8 +198,8 @@ export default class FilterCanvas extends Canvas {
             //dragging
             this.imageTranslate[0] = this.prevImgTranslate[0] + (this.prevMouse[0] - this.mouse[0]) / (this.canvas.width / this.imageScale);
             this.imageTranslate[1] = this.prevImgTranslate[1] + (this.prevMouse[1] - this.mouse[1]) / (this.canvas.height / this.imageScale);
-            this.render();
         }
+        this.render();
     }
 
     mouseWheelListener(event) {
@@ -200,6 +217,22 @@ export default class FilterCanvas extends Canvas {
         this.mouseButton = event.button;
         const rect = this.canvas.getBoundingClientRect();
         this.prevMouse = [event.clientX - rect.left, event.clientY - rect.top];
+
+        if(event.button === Canvas.MOUSE_BUTTON_LEFT) {
+            if(this.chartPickMode == FilterCanvas.CHART_POINT_NONE) {
+                this.chartPoints[0] = (((this.prevMouse[0]) / (this.canvas.width) - 0.5) * this.imageScale + 0.5 + this.imageTranslate[0]);
+                this.chartPoints[1] = (((this.prevMouse[1]) / (this.canvas.height) -0.5) * this.imageScale + 0.5  + this.imageTranslate[1]);
+                this.chartPickMode = FilterCanvas.CHART_POINT_FIRST;
+            } else if (this.chartPickMode == FilterCanvas.CHART_POINT_FIRST) {
+                this.chartPoints[2] = (((this.prevMouse[0]) / (this.canvas.width) - 0.5) * this.imageScale + 0.5 + this.imageTranslate[0]);
+                this.chartPoints[3] = (((this.prevMouse[1]) / (this.canvas.height) -0.5) * this.imageScale + 0.5  + this.imageTranslate[1]);
+                this.chartPickMode = FilterCanvas.CHART_POINT_SECOND;
+            } else if (this.chartPickMode == FilterCanvas.CHART_POINT_SECOND) {
+                this.chartPoints[4] = (((this.prevMouse[0]) / (this.canvas.width) - 0.5) * this.imageScale + 0.5 + this.imageTranslate[0]);
+                this.chartPoints[5] = (((this.prevMouse[1]) / (this.canvas.height) -0.5) * this.imageScale + 0.5  + this.imageTranslate[1]);
+                this.chartPickMode = FilterCanvas.CHART_POINT_THIRD;
+            }
+        }
     }
 
     mouseUpListener(event) {
@@ -208,5 +241,21 @@ export default class FilterCanvas extends Canvas {
         this.prevMouse = [event.clientX - rect.left, event.clientY - rect.top];
         this.prevImgTranslate[0] = this.imageTranslate[0];
         this.prevImgTranslate[1] = this.imageTranslate[1];
+    }
+
+    static get CHART_POINT_NONE() {
+        return 0;
+    }
+
+    static get CHART_POINT_FIRST() {
+        return 1;
+    }
+
+    static get CHART_POINT_SECOND() {
+        return 2;
+    }
+
+    static get CHART_POINT_THIRD() {
+        return 3;
     }
 }
