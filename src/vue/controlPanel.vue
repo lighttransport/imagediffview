@@ -45,7 +45,7 @@
            @input="input">
                 </div>
             </div>
-    </b-collapse>                    
+    </b-collapse>
   </div>
 </template>
 
@@ -64,5 +64,8 @@ export default {
     width: 300px;
     display: flex;
     flex-direction: column;
+    top: 0;
+    bottom: 0;
+    overflow: scroll;
 }
 </style>

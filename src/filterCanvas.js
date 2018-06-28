@@ -27,6 +27,7 @@ export default class FilterCanvas extends Canvas {
                                            this.canvas.width, this.canvas.height, 1)[0];
         this.imgObj = undefined;
         this.mouse = [0, 0];
+        this.mouseFromOrigin = [0, 0];
         this.colorOnMouse = [0, 0, 0];
 
         this.filterMode = -1;
@@ -42,6 +43,8 @@ export default class FilterCanvas extends Canvas {
         // 0: none 1: first point 2: second point 3: third point 4: determined
         this.chartPickMode = FilterCanvas.CHART_POINT_NONE;
         this.chartPoints = [0, 0, 0, 0, 0, 0];
+        this.chartPointsMouse = new Array(6);
+        this.chartColor = new Array(24); // upper left -> lower right
     }
 
     getRenderUniformLocations(program) {
@@ -185,11 +188,21 @@ export default class FilterCanvas extends Canvas {
         this.gl.flush();
     }
 
+    readChart(x, y, width, height) {
+        const rect = new Uint8Array(width * height * 4);
+        this.gl.readPixels(x, this.canvas.height - y,
+                           width, height,
+                           this.gl.RGBA, this.gl.UNSIGNED_BYTE, rect);
+        return rect;
+    }
+    
     mouseMoveListener(event) {
         event.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
         this.mouse = [event.clientX - rect.left, event.clientY - rect.top];
-
+        this.mouseFromOrigin = [(this.mouse[0] - this.canvas.width * 0.5) * this.imageScale + this.canvas.width * 0.5 + this.imageTranslate[0] * this.canvas.width,
+                                (this.mouse[1] - this.canvas.height * 0.5) * this.imageScale + this.canvas.height * 0.5 + this.imageTranslate[1] * this.canvas.height];
+        console.log(this.mouseFromOrigin);
         this.colorOnMouse = new Uint8Array(4);
         this.gl.readPixels(this.mouse[0], this.canvas.height - this.mouse[1], 1, 1,
                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.colorOnMouse);
@@ -203,13 +216,37 @@ export default class FilterCanvas extends Canvas {
     }
 
     mouseWheelListener(event) {
-        console.log('wheel');
         if (event.deltaY < 0) {
             this.imageScale /= 1.1;
         } else {
             this.imageScale *= 1.1;
         }
         this.render();
+    }
+
+    readColorChart() {
+        const w = this.chartPointsMouse[2] - this.chartPointsMouse[0];
+        const h = this.chartPointsMouse[3] - this.chartPointsMouse[5];
+         //    + this.chartPoints[0];
+         // + this.chartPoints[1];
+        const offsetX = Math.abs(w) / 12.0;
+        const offsetY = Math.abs(h) / 8.0;
+        const stepX = Math.abs(w) / 6.0;
+        const stepY = Math.abs(h) / 4.0;
+        
+        for(let j = 0; j < 4; j++) {
+            for(let i = 0; i < 6; i++) {
+                const x = (this.chartPointsMouse[0] + offsetX + stepX * i);
+                const y = (this.chartPointsMouse[1] + offsetY + stepY * j);
+                console.log(`(${x}, ${y})`);
+                const rect = new Uint8Array(1 * 1 * 4);
+                this.gl.readPixels(x, this.canvas.height - y,
+                                   1, 1,
+                                   this.gl.RGBA, this.gl.UNSIGNED_BYTE, rect);
+                console.log(rect);
+                this.chartColor[i + 6 * j] = [rect[0], rect[1], rect[2]];
+            }
+        }
     }
 
     mouseDownListener(event) {
@@ -222,17 +259,25 @@ export default class FilterCanvas extends Canvas {
             if(this.chartPickMode == FilterCanvas.CHART_POINT_NONE) {
                 this.chartPoints[0] = (((this.prevMouse[0]) / (this.canvas.width) - 0.5) * this.imageScale + 0.5 + this.imageTranslate[0]);
                 this.chartPoints[1] = (((this.prevMouse[1]) / (this.canvas.height) -0.5) * this.imageScale + 0.5  + this.imageTranslate[1]);
+                this.chartPointsMouse[0] = this.prevMouse[0];
+                this.chartPointsMouse[1] = this.prevMouse[1];
                 this.chartPickMode = FilterCanvas.CHART_POINT_FIRST;
             } else if (this.chartPickMode == FilterCanvas.CHART_POINT_FIRST) {
                 this.chartPoints[2] = (((this.prevMouse[0]) / (this.canvas.width) - 0.5) * this.imageScale + 0.5 + this.imageTranslate[0]);
                 this.chartPoints[3] = (((this.prevMouse[1]) / (this.canvas.height) -0.5) * this.imageScale + 0.5  + this.imageTranslate[1]);
+                this.chartPointsMouse[2] = this.prevMouse[0];
+                this.chartPointsMouse[3] = this.prevMouse[1];
                 this.chartPickMode = FilterCanvas.CHART_POINT_SECOND;
             } else if (this.chartPickMode == FilterCanvas.CHART_POINT_SECOND) {
                 this.chartPoints[4] = (((this.prevMouse[0]) / (this.canvas.width) - 0.5) * this.imageScale + 0.5 + this.imageTranslate[0]);
                 this.chartPoints[5] = (((this.prevMouse[1]) / (this.canvas.height) -0.5) * this.imageScale + 0.5  + this.imageTranslate[1]);
+                this.chartPointsMouse[4] = this.prevMouse[0];
+                this.chartPointsMouse[5] = this.prevMouse[1];
                 this.chartPickMode = FilterCanvas.CHART_POINT_THIRD;
+                this.readColorChart();
             }
         }
+        console.log(this.chartPoints);
     }
 
     mouseUpListener(event) {

@@ -79,6 +79,7 @@ export default {
 .footer {
     border-style: ridge;
     border-color: gray;
+    padding: 0;
     height: 50px;
     background-color: Azure;
     display: flex;
