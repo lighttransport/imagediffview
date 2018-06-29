@@ -10,7 +10,7 @@ window.addEventListener('load', () => {
     window.Vue = Vue;
     Vue.use(Buefy);
 
-    const canvasManager = new CanvasManager('canvas');
+    const canvasManager = new CanvasManager('canvas', "chartCanvas");
 
     const d = { 'canvasManager': canvasManager  };
 

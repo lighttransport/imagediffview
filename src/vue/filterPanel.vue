@@ -1,12 +1,17 @@
 <template>
   <div class="propertyPanel">
-    <select size="1" v-model="selected" @change="changed">
+    <div>
+      <select size="1" v-model="selected" @change="changed">
         <option disabled value="">Please select filter</option>
         <option v-for="option in options" v-bind:value="option.value">
           {{ option.text }}
         </option>
-    </select>
-    <component v-bind:is="filters[selected]" :canvasManager="canvasManager"></component>
+      </select>
+      <component v-bind:is="filters[selected]" :canvasManager="canvasManager"></component>
+    </div>
+    <div id="chartCanvasParent">
+      <canvas id="chartCanvas"></canvas>
+    </div>
   </div>
 </template>
 
@@ -35,6 +40,9 @@ export default {
         changed: function() {
             this.canvasManager.filterCanvas.filterMode = this.selected;
             this.canvasManager.filterCanvas.render();
+        },
+        readPixels: function() {
+            this.canvasManager.filterCanvas.readPixels();
         }
     }
 }
@@ -51,6 +59,14 @@ export default {
     border-color: gray;
 
     padding: 10px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#chartCanvasParent {
+    flex-basis: 300px;
 }
 
 </style>

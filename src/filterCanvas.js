@@ -45,6 +45,10 @@ export default class FilterCanvas extends Canvas {
         this.chartPoints = [0, 0, 0, 0, 0, 0];
         this.chartPointsMouse = new Array(6);
         this.chartColor = new Array(24); // upper left -> lower right
+        for(let i = 0; i < 24; i++) {
+            this.chartColor[i] = [0, 0, 0];
+        }
+        this.chartReadedListeners = [];
     }
 
     getRenderUniformLocations(program) {
@@ -188,14 +192,16 @@ export default class FilterCanvas extends Canvas {
         this.gl.flush();
     }
 
-    readChart(x, y, width, height) {
-        const rect = new Uint8Array(width * height * 4);
-        this.gl.readPixels(x, this.canvas.height - y,
-                           width, height,
-                           this.gl.RGBA, this.gl.UNSIGNED_BYTE, rect);
-        return rect;
+    addChartReadedListener(listener) {
+        this.chartReadedListeners.push(listener);
     }
-    
+
+    chartReaded() {
+        for(const listener of this.chartReadedListeners) {
+            listener();
+        }
+    }
+
     mouseMoveListener(event) {
         event.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
@@ -233,7 +239,7 @@ export default class FilterCanvas extends Canvas {
         const offsetY = Math.abs(h) / 8.0;
         const stepX = Math.abs(w) / 6.0;
         const stepY = Math.abs(h) / 4.0;
-        
+
         for(let j = 0; j < 4; j++) {
             for(let i = 0; i < 6; i++) {
                 const x = (this.chartPointsMouse[0] + offsetX + stepX * i);
@@ -247,6 +253,7 @@ export default class FilterCanvas extends Canvas {
                 this.chartColor[i + 6 * j] = [rect[0], rect[1], rect[2]];
             }
         }
+        this.chartReaded();
     }
 
     mouseDownListener(event) {

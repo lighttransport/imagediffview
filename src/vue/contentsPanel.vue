@@ -43,7 +43,7 @@ export default {
     align-items: center;
 }
 
-canvas {
+#canvas {
     width: 100%;
     height: 100%;
     cursor: crosshair;
