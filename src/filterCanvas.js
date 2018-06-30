@@ -48,7 +48,7 @@ export default class FilterCanvas extends Canvas {
         for(let i = 0; i < 24; i++) {
             this.chartColor[i] = [0, 0, 0];
         }
-        this.chartReadedListeners = [];
+        this.chartReadListeners = [];
     }
 
     getRenderUniformLocations(program) {
@@ -135,12 +135,6 @@ export default class FilterCanvas extends Canvas {
         this.resizeCanvas();
     }
 
-    computeHistogram(imageData) {
-        this.render();
-        const buff = new Uint8Array(this.canvas.width * this.canvas.height * 4);
-        imageData.computeHistogram(this.gl, buff, this.canvas.width, this.canvas.height);
-    }
-
     readPixels() {
         this.render();
         const buff = new Uint8Array(this.canvas.width * this.canvas.height * 4);
@@ -192,12 +186,12 @@ export default class FilterCanvas extends Canvas {
         this.gl.flush();
     }
 
-    addChartReadedListener(listener) {
-        this.chartReadedListeners.push(listener);
+    addChartReadListener(listener) {
+        this.chartReadListeners.push(listener);
     }
 
-    chartReaded() {
-        for(const listener of this.chartReadedListeners) {
+    chartRead() {
+        for(const listener of this.chartReadListeners) {
             listener();
         }
     }
@@ -253,7 +247,41 @@ export default class FilterCanvas extends Canvas {
                 this.chartColor[i + 6 * j] = [rect[0], rect[1], rect[2]];
             }
         }
-        this.chartReaded();
+        this.chartRead();
+    }
+
+    makeHistogram() {
+        this.redBin = new Array(256);
+        this.greenBin = new Array(256);
+        this.blueBin = new Array(256);
+        this.maxValue = [-1, -1, -1, -1];
+        for(let i = 0; i < 256; i++) {
+            this.redBin[i] = 0;
+            this.greenBin[i] = 0;
+            this.blueBin[i] = 0;
+        }
+        
+        const rect = new Uint8Array(this.canvas.width * this.canvas.height * 4);
+        this.gl.readPixels(0, 0,
+                           this.canvas.width, this.canvas.height,
+                           this.gl.RGBA, this.gl.UNSIGNED_BYTE, rect);
+        console.log(rect);
+        for(let i = 0; i < this.canvas.width * this.canvas.height * 4; i += 4) {
+            const red = parseInt(rect[i + 0]);
+            const green = parseInt(rect[i + 1]);
+            const blue = parseInt(rect[i + 2]);
+            this.redBin[red]++;
+            this.greenBin[green]++;
+            this.blueBin[blue]++;
+        }
+
+        for(let i = 0; i < 256; i++) {
+            this.redBin[i] = this.redBin[i] / (this.canvas.width * this.canvas.height);
+            this.greenBin[i] = this.greenBin[i] / (this.canvas.width * this.canvas.height);
+            this.blueBin[i] = this.blueBin[i] / (this.canvas.width * this.canvas.height);
+        }
+
+        return [this.redBin, this.greenBin, this.blueBin];
     }
 
     mouseDownListener(event) {

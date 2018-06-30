@@ -32,7 +32,9 @@ export default {
                                           () => {
                                               this.canvasManager.filterCanvas.setImage(img);
                                               this.canvasManager.filterCanvas.render();
-                                              this.canvasManager.filterCanvas.computeHistogram(img);
+                                              const hist = this.canvasManager.filterCanvas.makeHistogram();
+                                              this.canvasManager.histoCanvas.histogram = hist;
+                                              this.canvasManager.histoCanvas.render();
                                           });
                 
             }

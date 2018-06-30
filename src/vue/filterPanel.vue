@@ -9,7 +9,10 @@
       </select>
       <component v-bind:is="filters[selected]" :canvasManager="canvasManager"></component>
     </div>
-    <div id="chartCanvasParent">
+    <div class="chartCanvasParent">
+      <canvas id="histoCanvas"></canvas>
+    </div>
+    <div class="chartCanvasParent">
       <canvas id="chartCanvas"></canvas>
     </div>
   </div>
@@ -52,7 +55,6 @@ export default {
 .propertyPanel{
     height: 150px;
 
-    flex-direction: column;
     border-style: ridge;
     background-color: white;
     border-top: ridge;
@@ -65,7 +67,7 @@ export default {
     justify-content: space-between;
 }
 
-#chartCanvasParent {
+.chartCanvasParent {
     flex-basis: 300px;
 }
 
