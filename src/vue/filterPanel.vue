@@ -9,7 +9,7 @@
       </select>
       <component v-bind:is="filters[selected]" :canvasManager="canvasManager"></component>
     </div>
-    <div class="chartCanvasParent">
+    <div class="histoCanvasParent">
       <canvas id="histoCanvas"></canvas>
     </div>
     <div class="chartCanvasParent">
@@ -69,6 +69,15 @@ export default {
 
 .chartCanvasParent {
     flex-basis: 300px;
+}
+
+.histoCanvasParent {
+    flex-basis: 256px;
+    width: 256px;
+}
+
+#histoCanvas {
+    width: 256px;
 }
 
 </style>

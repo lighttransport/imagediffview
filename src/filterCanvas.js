@@ -254,11 +254,14 @@ export default class FilterCanvas extends Canvas {
         this.redBin = new Array(256);
         this.greenBin = new Array(256);
         this.blueBin = new Array(256);
+        this.luminanceBin = new Array(256);
+
         this.maxValue = [-1, -1, -1, -1];
         for(let i = 0; i < 256; i++) {
             this.redBin[i] = 0;
             this.greenBin[i] = 0;
             this.blueBin[i] = 0;
+            this.luminanceBin[i] = 0;
         }
         
         const rect = new Uint8Array(this.canvas.width * this.canvas.height * 4);
@@ -270,18 +273,26 @@ export default class FilterCanvas extends Canvas {
             const red = parseInt(rect[i + 0]);
             const green = parseInt(rect[i + 1]);
             const blue = parseInt(rect[i + 2]);
+            const luminance =  parseInt(0.298912 * red + 0.586611 * green + 0.114478 * blue);
             this.redBin[red]++;
             this.greenBin[green]++;
             this.blueBin[blue]++;
+            this.luminanceBin[luminance]++;
+
+            this.maxValue[0] = Math.max(this.maxValue[0], this.redBin[red]);
+            this.maxValue[1] = Math.max(this.maxValue[1], this.greenBin[green]);
+            this.maxValue[2] = Math.max(this.maxValue[2], this.blueBin[blue]);
+            this.maxValue[3] = Math.max(this.maxValue[3], this.luminanceBin[luminance]);
         }
 
         for(let i = 0; i < 256; i++) {
-            this.redBin[i] = this.redBin[i] / (this.canvas.width * this.canvas.height);
-            this.greenBin[i] = this.greenBin[i] / (this.canvas.width * this.canvas.height);
-            this.blueBin[i] = this.blueBin[i] / (this.canvas.width * this.canvas.height);
+            this.redBin[i] = this.redBin[i] / this.maxValue[0];
+            this.greenBin[i] = this.greenBin[i] / this.maxValue[1];
+            this.blueBin[i] = this.blueBin[i] / this.maxValue[2];
+            this.luminanceBin[i] = this.luminanceBin[i] / this.maxValue[3];
         }
 
-        return [this.redBin, this.greenBin, this.blueBin];
+        return [this.redBin, this.greenBin, this.blueBin, this.luminanceBin];
     }
 
     mouseDownListener(event) {

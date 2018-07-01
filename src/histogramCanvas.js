@@ -21,7 +21,7 @@ export default class HistogramCanvas extends Canvas {
             console.log(r);
             this.ctx.beginPath();
             this.ctx.moveTo(x, this.canvas.height);
-            this.ctx.lineTo(x, r * 10000);
+            this.ctx.lineTo(x, (1. - r) * this.canvas.height );
             this.ctx.stroke();
             x++;
         }
