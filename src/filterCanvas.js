@@ -286,10 +286,10 @@ export default class FilterCanvas extends Canvas {
         }
 
         for(let i = 0; i < 256; i++) {
-            this.redBin[i] = this.redBin[i] / this.maxValue[0];
-            this.greenBin[i] = this.greenBin[i] / this.maxValue[1];
-            this.blueBin[i] = this.blueBin[i] / this.maxValue[2];
-            this.luminanceBin[i] = this.luminanceBin[i] / this.maxValue[3];
+            this.redBin[i] = this.redBin[i] / (this.canvas.width * this.canvas.height);
+            this.greenBin[i] = this.greenBin[i] / (this.canvas.width * this.canvas.height);
+            this.blueBin[i] = this.blueBin[i] / (this.canvas.width * this.canvas.height);
+            this.luminanceBin[i] = this.luminanceBin[i] / (this.canvas.width * this.canvas.height);
         }
 
         return [this.redBin, this.greenBin, this.blueBin, this.luminanceBin];
