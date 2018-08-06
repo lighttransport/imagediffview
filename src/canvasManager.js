@@ -29,6 +29,12 @@ export default class CanvasManager {
         this.histoCanvas.render();
     }
 
+    initChart() {
+        this.chartCanvas = new ChartCanvas(this.chartCanvasId,
+                                           this.filterCanvas.chartColor);
+        this.chartCanvas.render();
+    }
+
     renderLoop() {
         if(this.filterCanvas.isRendering) {
             this.filterCanvas.render();

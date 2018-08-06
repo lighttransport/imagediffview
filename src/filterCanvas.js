@@ -196,6 +196,18 @@ export default class FilterCanvas extends Canvas {
         }
     }
 
+    clearColorChart() {
+        this.chartPickMode = FilterCanvas.CHART_POINT_NONE;
+        this.chartPoints = [0, 0, 0, 0, 0, 0];
+        this.chartPointsMouse = new Array(6);
+        this.chartColor = new Array(24); // upper left -> lower right
+        for(let i = 0; i < 24; i++) {
+            this.chartColor[i] = [0, 0, 0];
+        }
+
+        this.chartRead();
+    }
+
     mouseMoveListener(event) {
         event.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
@@ -263,7 +275,7 @@ export default class FilterCanvas extends Canvas {
             this.blueBin[i] = 0;
             this.luminanceBin[i] = 0;
         }
-        
+
         const rect = new Uint8Array(this.canvas.width * this.canvas.height * 4);
         this.gl.readPixels(0, 0,
                            this.canvas.width, this.canvas.height,
@@ -285,11 +297,15 @@ export default class FilterCanvas extends Canvas {
             this.maxValue[3] = Math.max(this.maxValue[3], this.luminanceBin[luminance]);
         }
 
+        const m = Math.max(Math.max(Math.max(this.maxValue[0], this.maxValue[1]),
+                                    this.maxValue[2]),
+                           this.maxValue[3]);
+
         for(let i = 0; i < 256; i++) {
-            this.redBin[i] = this.redBin[i] / (this.canvas.width * this.canvas.height);
-            this.greenBin[i] = this.greenBin[i] / (this.canvas.width * this.canvas.height);
-            this.blueBin[i] = this.blueBin[i] / (this.canvas.width * this.canvas.height);
-            this.luminanceBin[i] = this.luminanceBin[i] / (this.canvas.width * this.canvas.height);
+            this.redBin[i] = this.redBin[i] / m;
+            this.greenBin[i] = this.greenBin[i] / m;
+            this.blueBin[i] = this.blueBin[i] / m;
+            this.luminanceBin[i] = this.luminanceBin[i] / m;
         }
 
         return [this.redBin, this.greenBin, this.blueBin, this.luminanceBin];

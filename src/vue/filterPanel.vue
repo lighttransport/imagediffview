@@ -15,6 +15,7 @@
     <div class="chartCanvasParent">
       <canvas id="chartCanvas"></canvas>
     </div>
+    <button @click="clearColorChart">Clear</button>
   </div>
 </template>
 
@@ -46,6 +47,11 @@ export default {
         },
         readPixels: function() {
             this.canvasManager.filterCanvas.readPixels();
+        },
+        clearColorChart: function() {
+            this.canvasManager.filterCanvas.clearColorChart();
+            this.canvasManager.filterCanvas.render();
+            this.canvasManager.initChart();
         }
     }
 }
