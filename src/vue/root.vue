@@ -4,7 +4,7 @@
         <input type="file" id="file" name="file" @change="fileSelected">
       </header>
       <contents-panel :canvasManager="canvasManager" />
-      <footer class="footer"> 
+      <footer class="footer">
       </footer>
     </div>
 </template>
@@ -12,7 +12,7 @@
 <script>
 import ContentsPanel from './contentsPanel.vue';
 import ControlPanel from './controlPanel.vue';
-import ImageData from '../imageData.js';
+import MImageData from '../imageData.js';
 
 export default {
     props: ['canvasManager'],
@@ -27,16 +27,51 @@ export default {
                 const file = event.target.files[i];
                 const relativePath = file.webkitRelativePath;
                 const splitted = relativePath.split('/');
+                console.log(file.name);
+                if (file.name.includes('\.exr')) {
+                    console.log('Load exr');
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
 
-                const img = new ImageData(splitted[2], file,
-                                          () => {
-                                              this.canvasManager.filterCanvas.setImage(img);
-                                              this.canvasManager.filterCanvas.render();
-                                              const hist = this.canvasManager.filterCanvas.makeHistogram();
-                                              this.canvasManager.histoCanvas.histogram = hist;
-                                              this.canvasManager.histoCanvas.render();
-                                          });
-                
+                    const imgObj = new Image();
+
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(file);
+                    reader.addEventListener('load', () => {
+                        const data = new Uint8Array(reader.result);
+                        let exrImg = new Module.EXRLoader(data);
+                        canvas.width  = exrImg.width();
+                        canvas.height = exrImg.height();
+
+                        let imageArray = exrImg.getBytes().map(num => {
+                            // Convert values to 0-255 range and apply gamma curve
+                            return Math.pow(num, 0.44) * 256;
+                        });
+
+                        let image8Array = new Uint8ClampedArray(imageArray);
+                        let imageData = new ImageData(image8Array, exrImg.width(), exrImg.height());
+                        ctx.putImageData(imageData, 0, 0);
+
+                        const image = new Image();
+                        image.src = canvas.toDataURL();
+                        console.log('done');
+                        const mtmp = {};
+                        mtmp.imgObj = image;
+                        this.canvasManager.filterCanvas.setImage(mtmp);
+                        this.canvasManager.filterCanvas.render();
+
+                    });
+                } else {
+                    const img = new MImageData(splitted[2], file,
+                                              () => {
+                                                  this.canvasManager.filterCanvas.setImage(img);
+                                                  this.canvasManager.filterCanvas.render();
+                                                  const hist = this.canvasManager.filterCanvas.makeHistogram();
+                                                  this.canvasManager.histoCanvas.histogram = hist;
+                                                  this.canvasManager.histoCanvas.render();
+                                              });
+                }
+
             }
         }
     },
@@ -61,7 +96,7 @@ export default {
 .header {
     border-style: ridge;
     border-color: gray;
-    
+
     overflow:hidden;
     font-size: 2rem;
 

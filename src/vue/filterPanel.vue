@@ -1,14 +1,5 @@
 <template>
   <div class="propertyPanel">
-    <div>
-      <select size="1" v-model="selected" @change="changed">
-        <option disabled value="">Please select filter</option>
-        <option v-for="option in options" v-bind:value="option.value">
-          {{ option.text }}
-        </option>
-      </select>
-      <component v-bind:is="filters[selected]" :canvasManager="canvasManager"></component>
-    </div>
     <div class="histoCanvasParent">
       <canvas id="histoCanvas"></canvas>
     </div>
@@ -29,22 +20,9 @@ export default {
     props: ['canvasManager'],
     data: function() {
         return {
-            selected: "",
-            filters: ["", Sepia, HueSaturation, BrightnessContrast, Vibrance],
-            options: [
-                { text: 'None', value: 0 },
-                { text: 'Sepia', value: 1 },
-                { text: 'HueSaturation', value: 2 },
-                { text: 'BrightnessContrast', value: 3 },
-                { text: 'vibrance', value: 4 },
-            ]
         };
     },
     methods: {
-        changed: function() {
-            this.canvasManager.filterCanvas.filterMode = this.selected;
-            this.canvasManager.filterCanvas.render();
-        },
         readPixels: function() {
             this.canvasManager.filterCanvas.readPixels();
         },
