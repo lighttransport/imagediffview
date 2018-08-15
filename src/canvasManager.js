@@ -45,9 +45,4 @@ export default class CanvasManager {
         this.filterCanvas.resizeCanvas();
         this.filterCanvas.render();
     }
-
-    setImageData(imageData) {
-        this.filterCanvas.setImageData();
-        this.filterCanvas.render();
-    }
 }

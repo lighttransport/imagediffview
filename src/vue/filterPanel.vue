@@ -38,6 +38,7 @@ export default {
 <style>
 .propertyPanel{
     height: 150px;
+    min-height: 150px;
 
     border-style: ridge;
     background-color: white;

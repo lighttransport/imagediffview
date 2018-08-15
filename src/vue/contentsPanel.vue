@@ -28,6 +28,8 @@ export default {
 .contentsPanel {
   flex: 1;
   display: flex;
+  flex-direction: row;
+  overflow: hidden;
 }
 
 .canvasParent {

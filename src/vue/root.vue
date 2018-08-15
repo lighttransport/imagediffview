@@ -86,10 +86,9 @@ export default {
 #root {
     font-family: "Times New Roman";
     margin: 0;
-    height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    height:100%;
 }
 
 
@@ -100,6 +99,7 @@ export default {
     overflow:hidden;
     font-size: 2rem;
 
+    min-height: 50px;
     height: 50px;
     background-color: Azure;
     display: flex;
@@ -118,6 +118,7 @@ export default {
     border-color: gray;
     padding: 0;
     height: 50px;
+    min-height: 50px;
     background-color: Azure;
     display: flex;
     justify-content: space-between;
@@ -131,4 +132,5 @@ export default {
     -o-user-select: none;
     cursor: default;
 }
+
 </style>
