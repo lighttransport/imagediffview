@@ -31,11 +31,14 @@ export default class FilterCanvas extends Canvas {
         this.colorOnMouse = [0, 0, 0];
 
         this.filterMode = -1;
-        this.sepiaAmount = 0.5;
+        this.sepiaAmount = 0.0;
         this.hueSaturation = [0, 0];
         this.brightnessContrast = [0, 0];
         this.vibranceAmount = 0;
 
+        this.temperature = 1500;
+        this.temperatureStrength = 1;
+        
         this.imageScale = 1.0;
         this.imageTranslate = [0, 0];
         this.prevImgTranslate = [0, 0];
@@ -79,6 +82,8 @@ export default class FilterCanvas extends Canvas {
                                                           'u_brightnessContrast'));
         this.uniLocations.push(this.gl.getUniformLocation(program,
                                                           'u_vibranceAmount'));
+        this.uniLocations.push(this.gl.getUniformLocation(program,
+                                                          'u_temperature'))
     }
 
     resizeCanvas() {
@@ -171,6 +176,8 @@ export default class FilterCanvas extends Canvas {
         this.gl.uniform2f(this.uniLocations[i++],
                           this.brightnessContrast[0], this.brightnessContrast[1]);
         this.gl.uniform1f(this.uniLocations[i++], this.vibranceAmount);
+        this.gl.uniform2f(this.uniLocations[i++],
+                          this.temperature, this.temperatureStrength);
     }
 
     render() {

@@ -13,7 +13,6 @@
           {{ option.text }}
         </option>
       </select>
-      <component v-bind:is="filters[selected]" :canvasManager="canvasManager"></component>
     </div>
     
     <b-collapse class="card">
@@ -32,10 +31,11 @@
           Hue<br>
           <input type="range" min="-1" max="1" step="0.01"
                  v-model="canvasManager.filterCanvas.hueSaturation[0]"
+                 @input="input"><br>
+          Saturation<br>
+          <input type="range" min="-1" max="1"
+                 step="0.01" v-model="canvasManager.filterCanvas.hueSaturation[1]"
                  @input="input">
-          Saturation<input type="range" min="-1" max="1"
-                           step="0.01" v-model="canvasManager.filterCanvas.hueSaturation[1]"
-                           @input="input">
         </div>
       </div>
     </b-collapse>
@@ -52,6 +52,7 @@
       </div>
       <div class="card-content">
         <div class="content">
+          Amount<br>
           <input type="range" min="0" max="1" step="0.01"
                  v-model="canvasManager.filterCanvas.sepiaAmount"
                  @input="input">
@@ -71,9 +72,10 @@
       </div>
       <div class="card-content">
         <div class="content">
-          Brightness <input type="range" min="-1" max="1" step="0.01"
-                     v-model="canvasManager.filterCanvas.brightnessContrast[0]"
-                     @input="input"><br>
+          Brightness<br>
+          <input type="range" min="-1" max="1" step="0.01"
+                 v-model="canvasManager.filterCanvas.brightnessContrast[0]"
+                 @input="input"><br>
           Contrast<br>
           <input type="range" min="-1" max="1"
                  step="0.01" v-model="canvasManager.filterCanvas.brightnessContrast[1]"
@@ -94,8 +96,33 @@
       </div>
       <div class="card-content">
         <div class="content">
+          Amount<br>
           <input type="range" min="0" max="1" step="0.01"
                  v-model="canvasManager.filterCanvas.vibranceAmount"
+                 @input="input">
+        </div>
+      </div>
+    </b-collapse>
+    <b-collapse class="card">
+      <div slot="trigger" slot-scope="props" class="card-header">
+        <p class="card-header-title">
+          Temperature
+        </p>
+        <a class="card-header-icon">
+          <b-icon
+            :icon="props.open ? 'menu-down' : 'menu-up'">
+          </b-icon>
+        </a>
+      </div>
+      <div class="card-content">
+        <div class="content">
+          temperature<br>
+          <input type="range" min="1000" max="40000" step="1"
+                 v-model="canvasManager.filterCanvas.temperature"
+                 @input="input"><br>
+          strength<br>
+          <input type="range" min="0" max="1" step="0.01"
+                 v-model="canvasManager.filterCanvas.temperatureStrength"
                  @input="input">
         </div>
       </div>
@@ -108,25 +135,30 @@ import Sepia from './sepia.vue';
 import HueSaturation from './hueSaturation.vue';
 import BrightnessContrast from './brightnessContrast.vue';
 import Vibrance from './vibrance.vue';
+import Temperature from './temperature.vue';
 
 export default {
     props: ['canvasManager'],
     data: function() {
         return {
             selected: "",
-            filters: ["", Sepia, HueSaturation, BrightnessContrast, Vibrance],
+            filters: ["", Sepia, HueSaturation, BrightnessContrast, Vibrance, Temperature],
             options: [
                 { text: 'None', value: 0 },
                 { text: 'Sepia', value: 1 },
                 { text: 'HueSaturation', value: 2 },
                 { text: 'BrightnessContrast', value: 3 },
                 { text: 'vibrance', value: 4 },
+                { text: 'temperature', value: 5}
             ]
         };
     },
     methods: {
         changed: function() {
             this.canvasManager.filterCanvas.filterMode = this.selected;
+            this.canvasManager.filterCanvas.render();
+        },
+        input: function() {
             this.canvasManager.filterCanvas.render();
         }
     }
